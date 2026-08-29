@@ -52,12 +52,12 @@ four layers at both the shared-kernel and per-context level:
 ## Run locally
 
 ```bash
-make run                        # listens on :8080
-NEXORA_API_ADDR=:8090 make run  # or on another port
+make run                        # listens on :8090
+NEXORA_API_ADDR=:8091 make run  # or on another port
 ```
 
 ```bash
-curl -X POST localhost:8080/v1/chat/completions \
+curl -X POST localhost:8090/v1/chat/completions \
   -H 'Content-Type: application/json' \
   -d '{"model":"nexora-mock-llama-3.1-8b","messages":[{"role":"user","content":"hello"}]}'
 ```

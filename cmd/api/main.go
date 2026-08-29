@@ -20,7 +20,7 @@ func main() {
 func run() error {
 	addr := os.Getenv("NEXORA_API_ADDR")
 	if addr == "" {
-		addr = ":8080"
+		addr = ":8090"
 	}
 
 	commandBus := bus.New()

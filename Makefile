@@ -1,6 +1,6 @@
 .PHONY: run build test vet lint lint-fix fmt tidy check
 
-NEXORA_API_ADDR ?= :8080
+NEXORA_API_ADDR ?= :8090
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 
 run:
