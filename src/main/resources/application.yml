@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: nexora-api
+
+server:
+  port: 8090
+
+axon:
+  axonserver:
+    enabled: false
