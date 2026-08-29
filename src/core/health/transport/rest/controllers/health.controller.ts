@@ -1,10 +1,19 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  VERSION_NEUTRAL,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { HealthResponseDto } from '../dtos/health-response.dto';
 
+// version: VERSION_NEUTRAL — a healthcheck is infra tooling probing the
+// process, not a versioned API consumer; it shouldn't move if /v1
+// becomes /v2 one day.
 @ApiTags('health')
-@Controller('healthz')
+@Controller({ path: 'healthz', version: VERSION_NEUTRAL })
 export class HealthController {
   @Get()
   @HttpCode(HttpStatus.OK)

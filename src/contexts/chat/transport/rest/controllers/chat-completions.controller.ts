@@ -8,7 +8,7 @@ import { ChatCompletionRequestDto } from '../dtos/chat-completion-request.dto';
 import { ChatCompletionResponseDto } from '../dtos/chat-completion-response.dto';
 
 @ApiTags('chat')
-@Controller('v1/chat')
+@Controller('chat')
 export class ChatCompletionsController {
   constructor(private readonly commandBus: CommandBus) {}
 

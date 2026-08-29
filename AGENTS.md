@@ -89,6 +89,21 @@ Don't add a controller to one of them "for completeness" — that would
 be nexora-api quietly growing a public surface the README doesn't call
 for.
 
+### Versioning
+
+`main.ts` calls `app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' })`
+— `POST /v1/chat/completions` mirrors OpenAI's own path shape (see the
+root README), and every controller gets that `/v1` prefix automatically
+unless it opts out. Don't hardcode `v1/` into a `@Controller()` path
+string; that's not real versioning, just a string that happens to look
+like one (this repo did exactly that, briefly). `gardenia-api` doesn't
+version its routes at all (just a bare `/api` prefix, no version
+segment) — there's no cross-repo convention to match here; the `/v1`
+scheme is nexora-api's own public contract. `HealthController` opts out
+with `@Controller({ path: 'healthz', version: VERSION_NEUTRAL })` — a
+healthcheck is infra tooling probing the process, not a versioned API
+consumer, and shouldn't move if `/v1` ever becomes `/v2`.
+
 ## What's deliberately not here (yet)
 
 `nestjs-template` ships TypeORM/Postgres, Kafka, OpenTelemetry,
@@ -263,7 +278,11 @@ catches everything (`@Catch()`): any unexpected error must still produce
 this envelope, not Nest's default one. A `BaseException` resolves to a
 status via `EXCEPTION_STATUS_RESOLVERS` (one resolver per context that
 has domain exceptions — currently jobs, nodes, models; defaults to 400
-if none claims it); anything else is a real bug and stays a 500.
+if none claims it). A framework-level `HttpException` (Nest's own 404
+for an unmatched route, a malformed-JSON-body 400, ...) keeps its own
+`getStatus()` — don't let that collapse into 500 the way it briefly did
+before this was fixed. Anything that's neither is a real bug and stays
+a 500. `base-exception.filter.spec.ts` locks in all three cases.
 
 Exceptions from jobs/nodes/models propagate through `@nestjs/cqrs`'s
 `CommandBus.execute()`/`QueryBus.execute()` unchanged, all the way up

@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -9,6 +9,15 @@ import { BaseExceptionFilter } from './core/filters/base-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.enableShutdownHooks();
+
+  // URI versioning (POST /v1/chat/completions, mirroring OpenAI's own
+  // path shape — see the root README). gardenia-api doesn't version its
+  // routes at all, so there's no cross-repo convention to follow here;
+  // this is nexora-api's own public contract. defaultVersion: '1' means
+  // every controller gets /v1/... unless it opts out with
+  // `version: VERSION_NEUTRAL` (see HealthController — health checks
+  // shouldn't be versioned).
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
   // transform: true only — there's no class-validator decorators on
   // nexora-api's DTOs (see AGENTS.md: validation lives once, in each

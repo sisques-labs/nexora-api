@@ -2,6 +2,7 @@ import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
+  HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { resolveJobsExceptionStatus } from '@contexts/jobs/transport/exceptions/jobs-exception.filter';
@@ -31,8 +32,10 @@ const EXCEPTION_STATUS_RESOLVERS: Array<
  * (the OpenAI-compatible `{ error: { message, type } }` envelope), not
  * Nest's default one. A BaseException resolves to a specific status via
  * EXCEPTION_STATUS_RESOLVERS (defaulting to 400 — "the input was
- * invalid" is the overwhelmingly common case); anything else is a real
- * bug and stays a 500.
+ * invalid" is the overwhelmingly common case). A framework-level
+ * HttpException (unmatched route, malformed JSON body, ...) keeps its
+ * own status — Nest's 404 for "no route matches" must stay a 404, not
+ * collapse into a 500. Anything else is a real bug and stays a 500.
  */
 @Catch()
 export class BaseExceptionFilter implements ExceptionFilter {
@@ -49,16 +52,19 @@ export class BaseExceptionFilter implements ExceptionFilter {
   }
 
   private resolveStatus(exception: unknown): HttpStatus {
-    if (!(exception instanceof BaseException)) {
-      return HttpStatus.INTERNAL_SERVER_ERROR;
-    }
-    for (const resolve of EXCEPTION_STATUS_RESOLVERS) {
-      const status = resolve(exception);
-      if (status !== null) {
-        return status;
+    if (exception instanceof BaseException) {
+      for (const resolve of EXCEPTION_STATUS_RESOLVERS) {
+        const status = resolve(exception);
+        if (status !== null) {
+          return status;
+        }
       }
+      return HttpStatus.BAD_REQUEST;
     }
-    return HttpStatus.BAD_REQUEST;
+    if (exception instanceof HttpException) {
+      return exception.getStatus();
+    }
+    return HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
   private resolveMessage(exception: unknown): string {
