@@ -1,19 +1,19 @@
 import {
-  IJobsGateway,
-  JOBS_GATEWAY,
-} from '@contexts/chat/application/ports/jobs.gateway';
+  IJobsPort,
+  JOBS_PORT,
+} from '@contexts/chat/application/ports/jobs.port';
 import {
-  IModelsGateway,
-  MODELS_GATEWAY,
-} from '@contexts/chat/application/ports/models.gateway';
+  IModelsPort,
+  MODELS_PORT,
+} from '@contexts/chat/application/ports/models.port';
 import {
-  INodesGateway,
-  NODES_GATEWAY,
-} from '@contexts/chat/application/ports/nodes.gateway';
+  INodesPort,
+  NODES_PORT,
+} from '@contexts/chat/application/ports/nodes.port';
 import {
-  ISchedulerGateway,
-  SCHEDULER_GATEWAY,
-} from '@contexts/chat/application/ports/scheduler.gateway';
+  ISchedulerPort,
+  SCHEDULER_PORT,
+} from '@contexts/chat/application/ports/scheduler.port';
 import { ResultValueObject } from '@contexts/chat/domain/value-objects/result/result.value-object';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
@@ -30,11 +30,12 @@ export interface CreateChatCompletionResult {
  * the model, creates the job, asks the scheduler for a node, dispatches
  * the inference against that node and closes the job. None of these
  * pieces has business logic of its own here: it only coordinates the
- * gateways.
+ * ports.
  *
  * Doesn't extend nestjs-kit's BaseCommandHandler: that helper publishes
  * domain events off an AggregateRoot, and v0 has no event-sourced
- * aggregate to publish from (see JobAggregate's docstring).
+ * aggregate to publish from — chat has none of its own (see
+ * jobs.port.ts's docstring on why Job isn't one either).
  */
 @CommandHandler(CreateChatCompletionCommand)
 export class CreateChatCompletionCommandHandler implements ICommandHandler<
@@ -42,39 +43,41 @@ export class CreateChatCompletionCommandHandler implements ICommandHandler<
   CreateChatCompletionResult
 > {
   constructor(
-    @Inject(MODELS_GATEWAY) private readonly modelsGateway: IModelsGateway,
-    @Inject(JOBS_GATEWAY) private readonly jobsGateway: IJobsGateway,
-    @Inject(SCHEDULER_GATEWAY)
-    private readonly schedulerGateway: ISchedulerGateway,
-    @Inject(NODES_GATEWAY) private readonly nodesGateway: INodesGateway,
+    @Inject(MODELS_PORT) private readonly modelsPort: IModelsPort,
+    @Inject(JOBS_PORT) private readonly jobsPort: IJobsPort,
+    @Inject(SCHEDULER_PORT) private readonly schedulerPort: ISchedulerPort,
+    @Inject(NODES_PORT) private readonly nodesPort: INodesPort,
   ) {}
 
   async execute(
     command: CreateChatCompletionCommand,
   ): Promise<CreateChatCompletionResult> {
-    await this.modelsGateway.resolve(command.request.model.value);
+    await this.modelsPort.resolve(command.request.model.value);
 
-    const job = await this.jobsGateway.create(command.request.model.value);
+    const job = await this.jobsPort.create(command.request.model.value);
 
     let nodeId: string;
     try {
-      nodeId = await this.schedulerGateway.selectNode(job);
+      nodeId = await this.schedulerPort.selectNode(
+        job.id,
+        command.request.model.value,
+      );
     } catch (selectNodeFailure) {
-      await this.jobsGateway.markFailed(job.id, selectNodeFailure);
+      await this.jobsPort.markFailed(job.id, selectNodeFailure);
       throw selectNodeFailure;
     }
-    await this.jobsGateway.markScheduled(job.id, nodeId);
-    await this.jobsGateway.markRunning(job.id);
+    await this.jobsPort.markScheduled(job.id, nodeId);
+    await this.jobsPort.markRunning(job.id);
 
     let result: ResultValueObject;
     try {
-      result = await this.nodesGateway.dispatch(nodeId, command.request);
+      result = await this.nodesPort.dispatch(nodeId, command.request);
     } catch (dispatchFailure) {
-      await this.jobsGateway.markFailed(job.id, dispatchFailure);
+      await this.jobsPort.markFailed(job.id, dispatchFailure);
       throw dispatchFailure;
     }
 
-    await this.jobsGateway.markCompleted(job.id);
+    await this.jobsPort.markCompleted(job.id);
 
     return { jobId: job.id, result };
   }

@@ -4,7 +4,9 @@ import {
   ExceptionFilter,
   HttpStatus,
 } from '@nestjs/common';
-import { resolveChatExceptionStatus } from '@contexts/chat/transport/exceptions/chat-exception.filter';
+import { resolveJobsExceptionStatus } from '@contexts/jobs/transport/exceptions/jobs-exception.filter';
+import { resolveModelsExceptionStatus } from '@contexts/models/transport/exceptions/models-exception.filter';
+import { resolveNodesExceptionStatus } from '@contexts/nodes/transport/exceptions/nodes-exception.filter';
 import { BaseException } from '@sisques-labs/nestjs-kit';
 import { Response } from 'express';
 
@@ -12,11 +14,16 @@ import { Response } from 'express';
  * Per-context HTTP status resolvers, registered here as bounded contexts
  * are added. Each function returns a status for the exceptions it
  * recognises, or `null` to let the next resolver (or the default) decide.
- * Same extension-point pattern as nestjs-template/gardenia-api.
+ * Same extension-point pattern as nestjs-template/gardenia-api. chat has
+ * none of its own — it has no domain exceptions today (see AGENTS.md).
  */
 const EXCEPTION_STATUS_RESOLVERS: Array<
   (exception: BaseException) => HttpStatus | null
-> = [resolveChatExceptionStatus];
+> = [
+  resolveModelsExceptionStatus,
+  resolveJobsExceptionStatus,
+  resolveNodesExceptionStatus,
+];
 
 /**
  * Catches everything (not just BaseException, unlike the template): any

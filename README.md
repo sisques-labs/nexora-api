@@ -1,9 +1,14 @@
 # nexora-api
 
 Nexora's public API. The system's entry point — no business logic of
-its own, it orchestrates `nexora-jobs`, `nexora-scheduler` and
-`nexora-nodes`. In v0 all three (and the agent `nexora-nodes` forwards
-to) are in-process fakes: see `src/contexts/chat/infrastructure/mock`.
+its own, it orchestrates `nexora-jobs`, `nexora-scheduler`,
+`nexora-nodes` and `nexora-models`. Until those exist as separate
+services, this repo hosts all of them as their own bounded contexts
+(`src/contexts/{jobs,nodes,models,scheduler}`) alongside `chat` (the
+only one with a public REST surface), talking to each other through
+ports + adapters + `CommandBus`/`QueryBus` — never direct imports. See
+AGENTS.md's "Five bounded contexts, one deployable (for now)" for the
+full reasoning; it's the load-bearing decision in this repo.
 
 Scope/decisions for v0 are detailed in the [root README](../README.md).
 Conventions for anyone (agent or human) writing code here are in
@@ -26,9 +31,10 @@ landed on NestJS (see the root README).
 
 DDD by bounded context + CQRS, mirroring `gardenia-api`. See
 [AGENTS.md](AGENTS.md) for the full layout and the "where does X go"
-guide — in short: `src/core/` (shared kernel) + `src/contexts/chat/`
-(the only context today) split into `domain/` / `application/` /
-`infrastructure/` / `transport/`.
+guide — in short: `src/core/` (shared kernel) + five contexts under
+`src/contexts/` (`chat`, `jobs`, `nodes`, `models`, `scheduler`), each
+split into `domain/` / `application/` / `infrastructure/` (+
+`transport/` for `chat` only).
 
 ## Run locally
 
@@ -46,7 +52,7 @@ curl -X POST localhost:8090/v1/chat/completions \
 ```
 
 The only model available in v0 is hardcoded in
-`InMemoryModelsGateway` (`nexora-mock-llama-3.1-8b`).
+`InMemoryModelsRepository` (`nexora-mock-llama-3.1-8b`).
 
 Health check: `curl localhost:8090/healthz` → `{"status":"ok","timestamp":"..."}`.
 Swagger docs: `http://localhost:8090/docs`.
