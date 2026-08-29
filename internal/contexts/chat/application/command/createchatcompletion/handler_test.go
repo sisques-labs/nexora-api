@@ -7,7 +7,7 @@ import (
 	"github.com/sisques-labs/nexora-api/internal/contexts/chat/application/command/createchatcompletion"
 	"github.com/sisques-labs/nexora-api/internal/contexts/chat/domain/valueobjects"
 	"github.com/sisques-labs/nexora-api/internal/contexts/chat/infrastructure/mock"
-	"github.com/sisques-labs/nexora-api/internal/core/apperr"
+	"github.com/sisques-labs/nexora-api/internal/core/domain/apperr"
 )
 
 func newHandler() (*createchatcompletion.Handler, string) {
@@ -20,18 +20,18 @@ func newHandler() (*createchatcompletion.Handler, string) {
 }
 
 func TestHandler_Success(t *testing.T) {
-	h, modelName := newHandler()
+	handler, modelName := newHandler()
 
-	msg, err := valueobjects.NewMessage(valueobjects.RoleUser, "hola")
+	message, err := valueobjects.NewMessage(valueobjects.RoleUser, "hello")
 	if err != nil {
 		t.Fatalf("unexpected error building message: %v", err)
 	}
-	req, err := valueobjects.NewRequest(modelName, []valueobjects.Message{msg})
+	request, err := valueobjects.NewRequest(modelName, []valueobjects.Message{message})
 	if err != nil {
 		t.Fatalf("unexpected error building request: %v", err)
 	}
 
-	result, err := h.Handle(context.Background(), createchatcompletion.Command{Request: req})
+	result, err := handler.Handle(context.Background(), createchatcompletion.Command{Request: request})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -47,18 +47,18 @@ func TestHandler_Success(t *testing.T) {
 }
 
 func TestHandler_UnknownModel(t *testing.T) {
-	h, _ := newHandler()
+	handler, _ := newHandler()
 
-	msg, err := valueobjects.NewMessage(valueobjects.RoleUser, "hola")
+	message, err := valueobjects.NewMessage(valueobjects.RoleUser, "hello")
 	if err != nil {
 		t.Fatalf("unexpected error building message: %v", err)
 	}
-	req, err := valueobjects.NewRequest("modelo-inexistente", []valueobjects.Message{msg})
+	request, err := valueobjects.NewRequest("unknown-model", []valueobjects.Message{message})
 	if err != nil {
 		t.Fatalf("unexpected error building request: %v", err)
 	}
 
-	_, err = h.Handle(context.Background(), createchatcompletion.Command{Request: req})
+	_, err = handler.Handle(context.Background(), createchatcompletion.Command{Request: request})
 	if err == nil {
 		t.Fatal("expected an error for an unknown model")
 	}

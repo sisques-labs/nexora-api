@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/sisques-labs/nexora-api/internal/core/apperr"
+	"github.com/sisques-labs/nexora-api/internal/core/domain/apperr"
 )
 
 // ErrorResponse follows the OpenAI API's error shape, so existing

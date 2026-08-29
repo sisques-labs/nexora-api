@@ -5,7 +5,7 @@ import (
 
 	"github.com/sisques-labs/nexora-api/internal/contexts/chat/domain/entities"
 	"github.com/sisques-labs/nexora-api/internal/contexts/chat/domain/exceptions"
-	"github.com/sisques-labs/nexora-api/internal/core/apperr"
+	"github.com/sisques-labs/nexora-api/internal/core/domain/apperr"
 )
 
 // ModelsGateway is a hardcoded catalog of a single model, until

@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/sisques-labs/nexora-api/internal/contexts/chat"
-	"github.com/sisques-labs/nexora-api/internal/core/bus"
+	"github.com/sisques-labs/nexora-api/internal/core/application/bus"
 )
 
 func Register(r chi.Router, commandBus *bus.Bus) {

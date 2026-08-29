@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/sisques-labs/nexora-api/internal/contexts"
-	"github.com/sisques-labs/nexora-api/internal/core/bus"
-	"github.com/sisques-labs/nexora-api/internal/core/httpserver"
+	"github.com/sisques-labs/nexora-api/internal/core/application/bus"
+	httpserver "github.com/sisques-labs/nexora-api/internal/core/transport/http"
 )
 
 func main() {

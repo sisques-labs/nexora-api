@@ -7,8 +7,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 
-	"github.com/sisques-labs/nexora-api/internal/core/health"
-	"github.com/sisques-labs/nexora-api/internal/core/httpserver/middleware"
+	"github.com/sisques-labs/nexora-api/internal/core/transport/http/health"
+	"github.com/sisques-labs/nexora-api/internal/core/transport/http/middleware"
 )
 
 func NewRouter() chi.Router {

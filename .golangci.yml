@@ -1,0 +1,51 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gocritic
+    - revive
+    - unconvert
+    - unparam
+    - varnamelen
+  settings:
+    revive:
+      rules:
+        # This is an internal module (no `pkg/` public surface), so godoc
+        # comments on every exported symbol are noise, not signal. Keep
+        # the rest of revive's default rule set.
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+    varnamelen:
+      # Enforces AGENTS.md's naming rule: no short, undescriptive
+      # variable names. The exceptions below are Go/stdlib idiom, not
+      # loopholes — err, ctx, ok, i/j loop indices, w/r for
+      # http.ResponseWriter/*http.Request, t for *testing.T.
+      min-name-length: 3
+      ignore-names:
+        - err
+        - ok
+        - id
+        - ctx
+        - i
+        - j
+        - w
+        - r
+        - t
+        - tt
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/sisques-labs/nexora-api

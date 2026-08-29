@@ -10,7 +10,7 @@ import (
 	"github.com/sisques-labs/nexora-api/internal/contexts/chat/application/command/createchatcompletion"
 	"github.com/sisques-labs/nexora-api/internal/contexts/chat/infrastructure/mock"
 	"github.com/sisques-labs/nexora-api/internal/contexts/chat/transport/rest/handler"
-	"github.com/sisques-labs/nexora-api/internal/core/bus"
+	"github.com/sisques-labs/nexora-api/internal/core/application/bus"
 )
 
 func Register(r chi.Router, commandBus *bus.Bus) {

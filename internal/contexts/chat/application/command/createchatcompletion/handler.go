@@ -38,32 +38,32 @@ func (h *Handler) Handle(ctx context.Context, cmd Command) (Result, error) {
 		return Result{}, fmt.Errorf("resolve model: %w", err)
 	}
 
-	j, err := h.jobs.Create(ctx, cmd.Request.Model)
+	job, err := h.jobs.Create(ctx, cmd.Request.Model)
 	if err != nil {
 		return Result{}, fmt.Errorf("create job: %w", err)
 	}
 
-	nodeID, err := h.scheduler.SelectNode(ctx, j)
+	nodeID, err := h.scheduler.SelectNode(ctx, job)
 	if err != nil {
-		_, _ = h.jobs.MarkFailed(ctx, j.ID, err)
+		_, _ = h.jobs.MarkFailed(ctx, job.ID, err)
 		return Result{}, fmt.Errorf("select node: %w", err)
 	}
-	if _, err := h.jobs.MarkScheduled(ctx, j.ID, nodeID); err != nil {
+	if _, err := h.jobs.MarkScheduled(ctx, job.ID, nodeID); err != nil {
 		return Result{}, fmt.Errorf("mark job scheduled: %w", err)
 	}
 
-	if _, err := h.jobs.MarkRunning(ctx, j.ID); err != nil {
+	if _, err := h.jobs.MarkRunning(ctx, job.ID); err != nil {
 		return Result{}, fmt.Errorf("mark job running: %w", err)
 	}
-	result, err := h.nodes.Dispatch(ctx, nodeID, cmd.Request)
+	inferenceResult, err := h.nodes.Dispatch(ctx, nodeID, cmd.Request)
 	if err != nil {
-		_, _ = h.jobs.MarkFailed(ctx, j.ID, err)
+		_, _ = h.jobs.MarkFailed(ctx, job.ID, err)
 		return Result{}, fmt.Errorf("dispatch to node: %w", err)
 	}
 
-	if _, err := h.jobs.MarkCompleted(ctx, j.ID); err != nil {
+	if _, err := h.jobs.MarkCompleted(ctx, job.ID); err != nil {
 		return Result{}, fmt.Errorf("mark job completed: %w", err)
 	}
 
-	return Result{JobID: j.ID, Result: result}, nil
+	return Result{JobID: job.ID, Result: inferenceResult}, nil
 }

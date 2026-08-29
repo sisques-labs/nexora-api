@@ -6,20 +6,23 @@ its own, it orchestrates `nexora-jobs`, `nexora-scheduler` and
 to) are in-process fakes: see `internal/contexts/chat/infrastructure/mock`.
 
 Scope/decisions for v0 are detailed in the [root README](../README.md).
+Conventions for anyone (agent or human) writing code here are in
+[AGENTS.md](AGENTS.md).
 
 ## Architecture
 
 DDD by bounded context + CQRS, mirroring the sisques-labs `nestjs-template`
-layout in Go. Everything lives under `internal/`:
+layout in Go. Everything lives under `internal/`, split into the same
+four layers at both the shared-kernel and per-context level:
 
 - `core/` — shared kernel, cross-cutting to every context.
-  - `bus/` — in-process CQRS mediator (equivalent to Nest's
+  - `domain/apperr/` — error categories (`not_found`, `invalid`,
+    `internal`) that transport translates to HTTP status codes.
+  - `application/bus/` — in-process CQRS mediator (equivalent to Nest's
     `CommandBus`/`QueryBus`): each Command/Query has a Handler
     registered by type, dispatched with generics + reflection.
-  - `apperr/` — error categories (`not_found`, `invalid`, `internal`)
-    that transport translates to HTTP status codes.
-  - `httpserver/` — root router, middlewares and response helpers.
-  - `health/` — healthcheck endpoint.
+  - `transport/http/` — root router, middlewares, response helpers and
+    the healthcheck endpoint.
 - `contexts/` — one folder per bounded context. Today there's a single
   one, `chat`; `contexts.go` wires them all onto the root router
   (equivalent to `contexts.module.ts`).
@@ -66,8 +69,11 @@ The only model available in v0 is hardcoded in
 ## Other commands
 
 ```bash
-make test   # go test ./...
-make vet    # go vet ./...
-make fmt    # gofmt -l -w .
-make build  # binary at bin/api
+make test       # go test ./...
+make vet        # go vet ./...
+make lint       # golangci-lint run ./...
+make lint-fix   # golangci-lint run ./... --fix
+make fmt        # gofmt -l -w .
+make build      # binary at bin/api
+make check      # fmt + vet + lint + test — run before opening a PR
 ```
