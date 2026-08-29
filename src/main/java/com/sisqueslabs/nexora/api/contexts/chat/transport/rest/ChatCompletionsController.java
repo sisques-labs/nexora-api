@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sisqueslabs.nexora.api.contexts.chat.application.command.createchatcompletion.CreateChatCompletionCommand;
-import com.sisqueslabs.nexora.api.contexts.chat.application.command.createchatcompletion.CreateChatCompletionResult;
 import com.sisqueslabs.nexora.api.contexts.chat.transport.rest.dto.ChatCompletionRequestDto;
 import com.sisqueslabs.nexora.api.contexts.chat.transport.rest.dto.ChatCompletionResponseDto;
 
@@ -23,10 +22,10 @@ public class ChatCompletionsController {
 
     @PostMapping("/completions")
     public ChatCompletionResponseDto createChatCompletion(@RequestBody ChatCompletionRequestDto requestDto) {
-        var request = requestDto.toDomain();
+        var command = new CreateChatCompletionCommand(requestDto.toCommandInput());
 
-        CreateChatCompletionResult result = commandGateway.sendAndWait(new CreateChatCompletionCommand(request));
+        CreateChatCompletionCommand.Result result = commandGateway.sendAndWait(command);
 
-        return ChatCompletionResponseDto.from(result, request.model());
+        return ChatCompletionResponseDto.from(result, command.request().model());
     }
 }

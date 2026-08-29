@@ -37,7 +37,7 @@ public class CreateChatCompletionHandler {
     }
 
     @CommandHandler
-    public CreateChatCompletionResult handle(CreateChatCompletionCommand command) {
+    public CreateChatCompletionCommand.Result handle(CreateChatCompletionCommand command) {
         modelsGateway.resolve(command.request().model());
 
         Job job = jobsGateway.create(command.request().model());
@@ -62,6 +62,6 @@ public class CreateChatCompletionHandler {
 
         jobsGateway.markCompleted(job.id());
 
-        return new CreateChatCompletionResult(job.id(), inferenceResult);
+        return new CreateChatCompletionCommand.Result(job.id(), inferenceResult);
     }
 }

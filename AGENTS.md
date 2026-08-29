@@ -49,7 +49,7 @@ com/sisqueslabs/nexora/api/
         valueobjects/          # validated, immutable *ValueObject records/enums
         exceptions/            # typed domain exceptions (e.g. ModelNotFoundException)
       application/
-        command/<name>/        # one folder per command: *Command, *Result, *Handler
+        command/<name>/        # one folder per command: <Name>Command.java (Input+Command+Result) + <Name>Handler.java
         port/                  # interfaces the application needs from other services (one file per gateway)
       infrastructure/
         mock/                  # @Component in-memory fakes implementing the ports (v0 only — see below)
@@ -76,9 +76,28 @@ that was working around Go having no DI container). Here:
 ### Where does X go?
 
 - **A new use case (write)** → `contexts/<context>/application/command/<name>/`,
-  with a `<Name>Command` record, a `<Name>Result` record, and a `<Name>Handler`
-  (`@Component`, one `@CommandHandler`-annotated method). No test class is
-  optional — cover the success path and at least one failure path.
+  one file (`<Name>Command.java`) holding three nested types plus a
+  handler file:
+  - `<Name>Command.Input` — the primitive-shaped payload transport
+    builds from the request body (a record: no validation, no value
+    objects, just strings/numbers/lists of the same). This is the Java
+    equivalent of gardenia-api's `{Name}CommandInput` — TS makes that an
+    `interface` because a TS interface is a pure structural, zero-runtime
+    contract; Java has no equivalent (an `interface` can't hold instance
+    fields, so it would need a record to implement it anyway, adding
+    ceremony for no benefit). A plain record already *is* "immutable data
+    shape, no behavior" in Java — that's the correct translation, not a
+    deviation from the convention.
+  - `<Name>Command` itself — the canonical constructor takes value
+    objects (already valid); a second constructor takes `Input` and
+    builds those value objects from its primitives, which is where
+    validation actually happens (throwing `IllegalArgumentException` on
+    anything invalid). A handler only ever sees an already-valid Command.
+  - `<Name>Command.Result` — what the handler returns to transport.
+  - `<Name>Handler` (separate file, `@Component`, one
+    `@CommandHandler`-annotated method) — see `CreateChatCompletionCommand`/
+    `CreateChatCompletionHandler` for the reference shape. Cover the
+    success path and at least one failure path in its test.
 - **A new use case (read)** → same shape under `application/query/<name>/`,
   using Axon's `QueryGateway`/`@QueryHandler` (none yet in nexora-api).
 - **A new external dependency** (another Nexora service, a DB, a queue) →

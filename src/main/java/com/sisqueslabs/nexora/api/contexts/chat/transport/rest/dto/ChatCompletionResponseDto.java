@@ -3,7 +3,7 @@ package com.sisqueslabs.nexora.api.contexts.chat.transport.rest.dto;
 import java.time.Instant;
 import java.util.List;
 
-import com.sisqueslabs.nexora.api.contexts.chat.application.command.createchatcompletion.CreateChatCompletionResult;
+import com.sisqueslabs.nexora.api.contexts.chat.application.command.createchatcompletion.CreateChatCompletionCommand;
 import com.sisqueslabs.nexora.api.contexts.chat.domain.valueobjects.MessageValueObject;
 
 /**
@@ -16,7 +16,7 @@ public record ChatCompletionResponseDto(
         String model,
         List<ChatCompletionChoiceDto> choices) {
 
-    public static ChatCompletionResponseDto from(CreateChatCompletionResult result, String requestedModel) {
+    public static ChatCompletionResponseDto from(CreateChatCompletionCommand.Result result, String requestedModel) {
         MessageValueObject message = result.result().message();
         ChatCompletionChoiceDto choice = new ChatCompletionChoiceDto(
                 0,

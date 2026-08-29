@@ -36,7 +36,7 @@ class CreateChatCompletionHandlerTest {
         MessageValueObject message = new MessageValueObject(RoleValueObject.USER, "hello");
         RequestValueObject request = new RequestValueObject(MOCK_MODEL_NAME, List.of(message));
 
-        CreateChatCompletionResult result = handler.handle(new CreateChatCompletionCommand(request));
+        CreateChatCompletionCommand.Result result = handler.handle(new CreateChatCompletionCommand(request));
 
         assertThat(result.jobId()).isNotBlank();
         assertThat(result.result().message().role()).isEqualTo(RoleValueObject.ASSISTANT);
@@ -51,5 +51,27 @@ class CreateChatCompletionHandlerTest {
 
         assertThatThrownBy(() -> handler.handle(new CreateChatCompletionCommand(request)))
                 .isInstanceOf(ModelNotFoundException.class);
+    }
+
+    @Test
+    void commandConstructorBuildsValueObjectsFromAPrimitiveInput() {
+        var input = new CreateChatCompletionCommand.Input(
+                MOCK_MODEL_NAME,
+                List.of(new CreateChatCompletionCommand.Input.MessageInput("user", "hello")));
+
+        CreateChatCompletionCommand command = new CreateChatCompletionCommand(input);
+
+        assertThat(command.request().model()).isEqualTo(MOCK_MODEL_NAME);
+        assertThat(command.request().messages()).containsExactly(new MessageValueObject(RoleValueObject.USER, "hello"));
+    }
+
+    @Test
+    void commandConstructorRejectsAnInvalidRoleInTheInput() {
+        var input = new CreateChatCompletionCommand.Input(
+                MOCK_MODEL_NAME,
+                List.of(new CreateChatCompletionCommand.Input.MessageInput("not-a-role", "hello")));
+
+        assertThatThrownBy(() -> new CreateChatCompletionCommand(input))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }
