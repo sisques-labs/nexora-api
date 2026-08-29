@@ -36,27 +36,27 @@ func (g *NodesGateway) OnlyNodeID() string {
 	return g.node.ID
 }
 
-func (g *NodesGateway) Dispatch(ctx context.Context, nodeID string, req valueobjects.Request) (valueobjects.Result, error) {
+func (g *NodesGateway) Dispatch(ctx context.Context, nodeID string, request valueobjects.RequestValueObject) (valueobjects.ResultValueObject, error) {
 	if nodeID != g.node.ID {
-		return valueobjects.Result{}, fmt.Errorf("node %q not found", nodeID)
+		return valueobjects.ResultValueObject{}, fmt.Errorf("node %q not found", nodeID)
 	}
 
 	lastUserMessage := ""
-	for _, m := range req.Messages {
-		if m.Role == valueobjects.RoleUser {
-			lastUserMessage = m.Content
+	for _, message := range request.Messages {
+		if message.Role == valueobjects.RoleUser {
+			lastUserMessage = message.Content
 		}
 	}
 
-	reply, err := valueobjects.NewMessage(
+	reply, err := valueobjects.NewMessageValueObject(
 		valueobjects.RoleAssistant,
 		fmt.Sprintf("[mock inference on %s] echo: %s", g.node.ID, lastUserMessage),
 	)
 	if err != nil {
-		return valueobjects.Result{}, err
+		return valueobjects.ResultValueObject{}, err
 	}
 
-	return valueobjects.Result{
+	return valueobjects.ResultValueObject{
 		Message:      reply,
 		FinishReason: valueobjects.FinishReasonStop,
 	}, nil

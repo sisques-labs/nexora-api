@@ -11,5 +11,5 @@ import (
 // agent (the "fake agent"); in the future nexora-nodes will bridge to
 // the real nexora-agent.
 type NodesGateway interface {
-	Dispatch(ctx context.Context, nodeID string, req valueobjects.Request) (valueobjects.Result, error)
+	Dispatch(ctx context.Context, nodeID string, request valueobjects.RequestValueObject) (valueobjects.ResultValueObject, error)
 }

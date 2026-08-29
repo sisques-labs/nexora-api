@@ -22,11 +22,11 @@ func newHandler() (*createchatcompletion.Handler, string) {
 func TestHandler_Success(t *testing.T) {
 	handler, modelName := newHandler()
 
-	message, err := valueobjects.NewMessage(valueobjects.RoleUser, "hello")
+	message, err := valueobjects.NewMessageValueObject(valueobjects.RoleUser, "hello")
 	if err != nil {
 		t.Fatalf("unexpected error building message: %v", err)
 	}
-	request, err := valueobjects.NewRequest(modelName, []valueobjects.Message{message})
+	request, err := valueobjects.NewRequestValueObject(modelName, []valueobjects.MessageValueObject{message})
 	if err != nil {
 		t.Fatalf("unexpected error building request: %v", err)
 	}
@@ -49,11 +49,11 @@ func TestHandler_Success(t *testing.T) {
 func TestHandler_UnknownModel(t *testing.T) {
 	handler, _ := newHandler()
 
-	message, err := valueobjects.NewMessage(valueobjects.RoleUser, "hello")
+	message, err := valueobjects.NewMessageValueObject(valueobjects.RoleUser, "hello")
 	if err != nil {
 		t.Fatalf("unexpected error building message: %v", err)
 	}
-	request, err := valueobjects.NewRequest("unknown-model", []valueobjects.Message{message})
+	request, err := valueobjects.NewRequestValueObject("unknown-model", []valueobjects.MessageValueObject{message})
 	if err != nil {
 		t.Fatalf("unexpected error building request: %v", err)
 	}

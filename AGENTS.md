@@ -34,7 +34,7 @@ internal/
       <context>.go           # the context's wiring: builds gateways, registers handlers, mounts routes
       domain/
         entities/            # identity-bearing types with a lifecycle (e.g. Job)
-        valueobjects/         # validated, immutable types constructed via New*() (e.g. Message, Request)
+        valueobjects/         # validated, immutable *ValueObject types, constructed via New*() (e.g. MessageValueObject)
         exceptions/           # typed domain errors (e.g. ModelNotFound)
       application/
         command/<name>/       # one folder per command: command.go + handler.go + handler_test.go
@@ -60,8 +60,10 @@ internal/
   `infrastructure/httpclient/` or `infrastructure/persistence/`). Application code
   depends on the port, never on the concrete implementation.
 - **A validated primitive with construction rules** (a role, a non-empty string, an
-  ID with a specific format) → `domain/valueobjects/`, built via a `New*()` function
-  that returns `(T, error)`. Never a bare struct literal for something with invariants.
+  ID with a specific format) → `domain/valueobjects/`, named `<Name>ValueObject`
+  (e.g. `MessageValueObject`, `RequestValueObject` — not `VO`, not bare `Message`),
+  built via a `New<Name>ValueObject(...)` function that returns `(T, error)`. Never
+  a bare struct literal for something with invariants.
 - **Something with identity and a lifecycle** (created, transitions through states)
   → `domain/entities/`.
 - **A domain-specific failure** (not found, conflict, invalid state transition) →
@@ -130,6 +132,15 @@ Other naming rules already in effect in the codebase:
 
 - Constructors are `New<Type>(...)`, returning `(T, error)` when the
   type has invariants to validate, or a bare value/pointer otherwise.
+- Every type in `domain/valueobjects/` is named `<Name>ValueObject`
+  (`RoleValueObject`, `MessageValueObject`, `RequestValueObject`,
+  `ResultValueObject`, `FinishReasonValueObject`) — never `VO`, never
+  the bare name. Same convention as `gardenia-api`'s
+  `{Name}ValueObject` (not `VO`) rule. Yes, this stutters against the
+  `valueobjects` package name (`valueobjects.MessageValueObject`) —
+  that's the deliberate tradeoff for a name that's unambiguous
+  wherever it shows up (a struct field, a log line, a test failure),
+  not just at the point where it's package-qualified.
 - Interfaces implemented by mocks/adapters are named after what they
   provide, suffixed `Gateway` when they proxy another service
   (`JobsGateway`, `NodesGateway`) — not `I`-prefixed, not suffixed

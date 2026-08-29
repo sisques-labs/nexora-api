@@ -19,21 +19,21 @@ type ChatCompletionMessage struct {
 	Content string `json:"content"`
 }
 
-func (r ChatCompletionRequest) ToDomain() (valueobjects.Request, error) {
+func (r ChatCompletionRequest) ToDomain() (valueobjects.RequestValueObject, error) {
 	if len(r.Messages) == 0 {
-		return valueobjects.Request{}, fmt.Errorf("messages must not be empty")
+		return valueobjects.RequestValueObject{}, fmt.Errorf("messages must not be empty")
 	}
 
-	messages := make([]valueobjects.Message, 0, len(r.Messages))
-	for i, m := range r.Messages {
-		msg, err := valueobjects.NewMessage(valueobjects.Role(m.Role), m.Content)
+	messages := make([]valueobjects.MessageValueObject, 0, len(r.Messages))
+	for i, message := range r.Messages {
+		domainMessage, err := valueobjects.NewMessageValueObject(valueobjects.RoleValueObject(message.Role), message.Content)
 		if err != nil {
-			return valueobjects.Request{}, fmt.Errorf("messages[%d]: %w", i, err)
+			return valueobjects.RequestValueObject{}, fmt.Errorf("messages[%d]: %w", i, err)
 		}
-		messages = append(messages, msg)
+		messages = append(messages, domainMessage)
 	}
 
-	return valueobjects.NewRequest(r.Model, messages)
+	return valueobjects.NewRequestValueObject(r.Model, messages)
 }
 
 // ChatCompletionResponse mirrors OpenAI's response shape.

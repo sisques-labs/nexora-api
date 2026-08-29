@@ -2,16 +2,16 @@ package valueobjects
 
 import "fmt"
 
-// Role identifies who is speaking within a conversation turn.
-type Role string
+// RoleValueObject identifies who is speaking within a conversation turn.
+type RoleValueObject string
 
 const (
-	RoleSystem    Role = "system"
-	RoleUser      Role = "user"
-	RoleAssistant Role = "assistant"
+	RoleSystem    RoleValueObject = "system"
+	RoleUser      RoleValueObject = "user"
+	RoleAssistant RoleValueObject = "assistant"
 )
 
-func (r Role) Valid() bool {
+func (r RoleValueObject) Valid() bool {
 	switch r {
 	case RoleSystem, RoleUser, RoleAssistant:
 		return true
@@ -20,18 +20,18 @@ func (r Role) Valid() bool {
 	}
 }
 
-// Message is a conversation turn sent in the request.
-type Message struct {
-	Role    Role
+// MessageValueObject is a conversation turn sent in the request.
+type MessageValueObject struct {
+	Role    RoleValueObject
 	Content string
 }
 
-func NewMessage(role Role, content string) (Message, error) {
+func NewMessageValueObject(role RoleValueObject, content string) (MessageValueObject, error) {
 	if !role.Valid() {
-		return Message{}, fmt.Errorf("chat: invalid role %q", role)
+		return MessageValueObject{}, fmt.Errorf("chat: invalid role %q", role)
 	}
 	if content == "" {
-		return Message{}, fmt.Errorf("chat: content must not be empty")
+		return MessageValueObject{}, fmt.Errorf("chat: content must not be empty")
 	}
-	return Message{Role: role, Content: content}, nil
+	return MessageValueObject{Role: role, Content: content}, nil
 }

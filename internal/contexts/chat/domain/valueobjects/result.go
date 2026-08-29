@@ -1,14 +1,14 @@
 package valueobjects
 
-// FinishReason indicates why the model stopped generating text.
-type FinishReason string
+// FinishReasonValueObject indicates why the model stopped generating text.
+type FinishReasonValueObject string
 
 const (
-	FinishReasonStop FinishReason = "stop"
+	FinishReasonStop FinishReasonValueObject = "stop"
 )
 
-// Result is the full inference response (no streaming in v0).
-type Result struct {
-	Message      Message
-	FinishReason FinishReason
+// ResultValueObject is the full inference response (no streaming in v0).
+type ResultValueObject struct {
+	Message      MessageValueObject
+	FinishReason FinishReasonValueObject
 }
